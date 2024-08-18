@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @unique
+  email        String        @unique
+  name         String
+  portfolio    Float         @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  coinTrackers CoinTracker[]
+  bookmarks    Bookmark[]
+}
+
+model Coin {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  coinId            String        @unique
+  cmcRank           Int
+  name              String
+  symbol            String
+  slug              String        @unique
+  marketCap         Float
+  price             Float
+  volume            Float
+  circulatingSupply Float
+  totalSupply       Float
+  volumeChange24h   Float
+  percentChange1h   Float
+  percentChange24h  Float
+  percentChange7d   Float
+  coinTrackers      CoinTracker[]
+  bookmarks         Bookmark[]
+}
+
+model CoinTracker {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  coinId          String
+  userId          String
+  quantity        Float
+  pricePerCoin    Float
+  totalPrice      Float
+  transactionDate DateTime
+  mode            Mode
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [userId])
+  coin            Coin     @relation(fields: [coinId], references: [coinId])
+}
+
+model Alert {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  coinId       String
+  userId       String
+  currentPrice Float
+  setPrice     Float
+  startTime    DateTime?
+  endTime      DateTime?
+  status       Status
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Bookmark {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  coinId    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [userId])
+  coin      Coin     @relation(fields: [coinId], references: [coinId])
+}
+
+enum Mode {
+  BUY
+  SELL
+}
+
+enum Status {
+  REACHED
+  NOT_REACHED
+}
